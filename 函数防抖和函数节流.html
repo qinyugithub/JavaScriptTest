@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .testbox {
+            width: 100px;
+            height: 100px;
+            background-color: #999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="testbox">
+    </div>
+
+    <script>
+        var testbox = document.getElementsByClassName("testbox")[0];
+        testbox.addEventListener("mouseover", moveTest, false)
+
+
+
+
+
+
+        function moveTest() {
+            //moveImple(1,2)
+            newfn(1, 2)
+        };
+
+        function moveImple(a, b) {
+            console.log(a, b)
+        }
+
+        var newfn = debounce(moveImple, 1000, true);
+
+        function debounce(fn, time, triggleNow) {
+            var t = null;
+            return function () {
+                var _self = this,
+                    args = arguments;
+                if (t) {
+                    clearTimeout(t);
+                }
+                if (triggleNow) {
+                    if (!t) {
+                        fn.apply(_self, args);
+                    }
+                    t = setTimeout(function () {
+                        t = null;
+                    }, time)
+                } else {
+                    t = setTimeout(function () {
+                        fn.apply(_self, args);
+                    }, time)
+                }
+            }
+        }
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
