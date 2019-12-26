@@ -30,8 +30,9 @@
 
 
         function moveTest() {
-            //moveImple(1,2)
-            newfn(1, 2)
+            //moveImple(1,2)  //普通方法
+            //newfn(1, 2)       //防抖方法
+            newfn2(1,2);
         };
 
         function moveImple(a, b) {
@@ -39,6 +40,7 @@
         }
 
         var newfn = debounce(moveImple, 1000, true);
+        var newfn2=throttle(moveImple,1000);
 
         function debounce(fn, time, triggleNow) {
             var t = null;
@@ -59,6 +61,26 @@
                     t = setTimeout(function () {
                         fn.apply(_self, args);
                     }, time)
+                }
+            }
+        }
+
+        function throttle(fn,time) {
+            var t = null;
+                date = new Date().getTime();
+            
+            return function() {
+                var _self=this,
+                    args=arguments,
+                    curTime=new Date().getTime();
+                clearTimeout(t);
+                if(curTime-date>time){
+                    fn.apply(_self,args);
+                    date=curTime;  //!!!!
+                }else{
+                    t=setTimeout(function (){
+                        fn.apply(_self,args);
+                    },time);
                 }
             }
         }
