@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        function add(a, b, c, d) {
+            return a + b + c + d;
+        }
+
+
+        function curry(fn,len) {
+            var len = len || fn.length;
+
+            var func = function(fn) {
+                var args = [].slice.call(arguments, 1);
+                return function () {
+                    var newargs = args.concat([].slice.call(arguments));
+                    return fn.apply(this, newargs);
+                }
+            }
+
+            return function(){
+                var curlen = arguments.length;
+                if(curlen < len){
+                    var newarr = [fn].concat([].slice.call(arguments));
+                    return curry(func.apply(this,newarr),len - curlen);
+                }else{
+                    return fn.apply(this,arguments)
+                }
+            }
+
+        }
+
+        console.log(curry(add)(1)(2)(3)(4));
+
+
+
+
+
+    </script>
+</body>
+
+</html>
