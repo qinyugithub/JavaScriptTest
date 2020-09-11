@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+        (function(){
+            var BaseObj = function(){};
+            BaseObj.prototype.queueObj = function(type,fn){
+                var objitem = this,
+                    type = type || "fx",
+                    fn = fn || null;
+                if(arguments.length === 1){
+                    return objitem[type];
+                }
+                objitem[type] === undefined ? objitem[type] = [fn] : objitem[type].push(fn);
+                return this;
+            }
+    
+            BaseObj.prototype.dequeur = function(type){
+                var item = this,
+                    queueArr = item[type] || [],
+                    currentItem = queueArr.shift();
+                    if(currentItem === undefined){
+                        return ;
+                    };
+                var _self = this;
+                var next = function(){
+                    _self.dequeur(type);
+                }
+                currentItem(next);
+                return this;
+            }
+    
+            BaseObj.prototype.sleep = function(time){
+                var baseItem = this;
+                this.queueObj("qinyu",function(next){
+                    setTimeout(function(){
+                        next();
+                    },time)
+                });
+                return this;
+            }
+    
+    
+           var baseObj = new BaseObj();
+    
+            baseObj.queueObj("qinyu",function(next){
+                console.log(1);
+                next();
+            }).sleep(2000).queueObj("qinyu",function(next){
+                console.log(2);
+                next();
+            }).queueObj("qinyu",function(next){
+                console.log(3);
+            });
+    
+            baseObj.dequeur("qinyu");
+    
+    
+
+    
+        })()
+    </script>
+</body>
+
+</html>
