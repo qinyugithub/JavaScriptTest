@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        var myAjax = (function () {
+
+            function doAjax(opt) {
+                var xhr;
+                try {   //放在里面，每次执行方法都要创建对象
+                    xhr = window.XMLHttpRequest ?
+                        new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (error) {
+                    throw new Error("浏览器不支持异步请求");
+                }
+
+                var type = (opt.type || "GET").toUpperCase(),
+                    url = opt.url,
+                    data = opt.data || null,
+                    async = opt.async || true,
+                    success = opt.success || function () { },
+                    fail = opt.fail || function () { },
+                    complate = opt.complate || function () { };
+
+                xhr.open(type, url, async);
+                type === "POST" && xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.send(type === "GET" ? null : formateDate(data));
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            success(xhr.responseText);
+                        } else {
+                            fail(xhr.responseText);
+                        }
+                        complate();
+                    }
+                }
+            }
+
+            function formateDate(obj) {
+                var str = "";
+                for (var key in obj) {
+                    str += key + "=" + obj[key] + "&"
+                }
+                return str.replace(/&$/, "");
+            }
+
+
+            return {
+                ajax: function (opt) {
+                    doAjax(opt);
+                },
+                get: function (url, callback) {
+                    doAjax({
+                        type: "get",
+                        url: url,
+                        success: callback
+                    });
+                },
+                post: function (url, data, callback) {
+                    doAjax({
+                        type: "post",
+                        url: url,
+                        data: data,
+                        success: callback
+                    });
+                }
+            }
+        })();
+
+        myAjax.ajax({
+            type: "get",
+            url: "http://jsonplaceholder.typicode.com/posts",
+            success: function (data) {
+                console.log(data);
+            },
+            fail: function (data) {
+                console.log("ajax 结果");
+                console.log(data);
+            }
+        })
+
+        myAjax.get("http://jsonplaceholder.typicode.com/posts", function (data) {
+            console.log("get 结果");
+            console.log(data);
+        })
+
+        myAjax.post("http://jsonplaceholder.typicode.com/posts", { a: 1, b: 2 }, function (data) {
+            console.log("post 结果");
+            console.log(data);
+        })
+    </script>
+</body>
+
+</html>
