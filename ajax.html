@@ -11,9 +11,9 @@
     <script type="text/javascript">
 
         var myAjax = (function () {
-
             function doAjax(opt) {
-                var xhr;
+                var xhr,
+                    t; //超时设置
                 try {   //放在里面，每次执行方法都要创建对象
                     xhr = window.XMLHttpRequest ?
                         new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
@@ -24,24 +24,70 @@
                 var type = (opt.type || "GET").toUpperCase(),
                     url = opt.url,
                     data = opt.data || null,
-                    async = opt.async || true,
+                    async = opt.async + '' === 'false' ? false : true;
                     success = opt.success || function () { },
                     fail = opt.fail || function () { },
-                    complate = opt.complate || function () { };
+                    complate = opt.complate || function () { },
+                    timeout = opt.timeout || 30000,
+                    dataType = opt.dataType || 'JSON',
+                    jsonp = opt.jsonp,
+                    jsonpCallBack = opt.jsonpCallBack || "qy_" + new Date().getTime();
+
+                    //处理jsonp
+                    if(dataType.toUpperCase() === 'JSONP'){
+                        if(type === "POST"){
+                            throw new Error("JSONP仅支持GET请求方式！");
+                        }
+                        var oScript = document.createElement("script");
+                        oScript.src = url.indexOf('?') === -1
+                                    ? url + '?' + jsonp + '=' + jsonpCallBack
+                                    : url + '&' + jsonp + '=' + jsonpCallBack;
+                        document.body.appendChild(oScript);
+                        document.body.removeChild(oScript);  //上述过程为异步执行
+
+                        window[jsonpCallBack] = function(data){
+                            success(data)
+                        }
+                        return;
+                    }
+
 
                 xhr.open(type, url, async);
                 type === "POST" && xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhr.send(type === "GET" ? null : formateDate(data));
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            success(xhr.responseText);
+                        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+                            switch(dataType.toUpperCase()){
+                                case 'JSON':
+                                    success(JSON.parse(xhr.responseText));
+                                    break;
+                                case 'XML':
+                                    success(xhr.responseXML);
+                                    break;
+                                case 'TEXT':
+                                    success(xhr.responseText);
+                                    break;
+                                default:
+                                   success(JSON.parse(xhr.responseText));
+                            }
                         } else {
-                            fail(xhr.responseText);
+                            fail(JSON.parse(xhr.responseText));
                         }
                         complate();
+                        clearTimeout(t);
+                        t = null;
+                        xhr = null;
                     }
                 }
+                t = setTimeout(function(){
+                    console.log("超时了");
+                    xhr.abort();
+                    clearTimeout(t);
+                    t = null;
+                    xhr = null;
+                    complate();
+                }, timeout);
             }
 
             function formateDate(obj) {
@@ -77,25 +123,39 @@
 
         myAjax.ajax({
             type: "get",
-            url: "http://jsonplaceholder.typicode.com/posts",
+            url: "https://www.baidu.com/sugrec?prod=pc&wd=123",
+            dataType: "jsonp",
+            jsonp:'cb',
+            // jsonpCallBack : 'qinyu',
+            timeout: 5000,
             success: function (data) {
                 console.log(data);
             },
-            fail: function (data) {
-                console.log("ajax 结果");
-                console.log(data);
-            }
         })
 
-        myAjax.get("http://jsonplaceholder.typicode.com/posts", function (data) {
-            console.log("get 结果");
-            console.log(data);
-        })
+        // myAjax.ajax({
+        //     type: "get",
+        //     url: "http://jsonplaceholder.typicode.com/posts",
+        //     dataType: "text",
+        //     timeout: 5000,
+        //     success: function (data) {
+        //         console.log(data);
+        //     },
+        //     fail: function (data) {
+        //         console.log("ajax 结果");
+        //         console.log(data);
+        //     }
+        // })
 
-        myAjax.post("http://jsonplaceholder.typicode.com/posts", { a: 1, b: 2 }, function (data) {
-            console.log("post 结果");
-            console.log(data);
-        })
+        // myAjax.get("http://jsonplaceholder.typicode.com/posts", function (data) {
+        //     console.log("get 结果");
+        //     console.log(data);
+        // })
+
+        // myAjax.post("http://jsonplaceholder.typicode.com/posts", { a: 1, b: 2 }, function (data) {
+        //     console.log("post 结果");
+        //     console.log(data);
+        // })
     </script>
 </body>
 
